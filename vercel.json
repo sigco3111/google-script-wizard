@@ -1,21 +1,11 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "dist",
-        "installCommand": "npm install --no-optional",
-        "buildCommand": "npm run build"
-      }
-    }
-  ],
+  "buildCommand": "node build.js",
+  "outputDirectory": "dist",
+  "framework": null,
+  "public": true,
   "routes": [
     { "handle": "filesystem" },
-    { "src": "/assets/(.*)", "dest": "/assets/$1" },
-    { "src": "/favicon.svg", "dest": "/favicon.svg" },
-    { "src": "/index.css", "dest": "/index.css" },
     { "src": "/(.*)", "dest": "/index.html" }
   ]
 } 
