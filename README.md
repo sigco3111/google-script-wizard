@@ -5,15 +5,9 @@
 
 Google Script Wizard는 자연어 앱 아이디어를 입력받아, Google Apps Script 프로젝트를 위한 데이터 구조 설계(Google Sheets) 및 UI 요소 제안을 AI(Google Gemini API)를 통해 받고, 최종적으로 `Code.gs`와 `index.html` 파일을 생성해주는 단계별 마법사 도구입니다. 복잡한 설정 없이 빠르게 프로토타입을 만들거나, Apps Script 개발의 시작점으로 활용할 수 있습니다.
 
-https://www.oppadu.com/ai-apps-script-10min/ 이 사이트에서 영감을 받아 만들었습니다.
-
-<span style="color:green">**생성한 Code.gs와 index.html에 문제가 있거나 규모가 큰 프로젝트라면, 생성된 산출물 중 claude_prompt.txt를 이용해 클로드나 구글AI스튜디오를 통해 생성하시면 됩니다.**</span>
-
-실행 주소 : https://dev-canvas-pi.vercel.app/
-
 ## 주요 기능 (Key Features)
 
-*   **자연어 기반 아이디어 입력:** 만들고 싶은 앱에 대한 설명을 간단한 자연어로 입력합니다. <span style="color:green">(앱 제목만으로 생성 가능)</span>
+*   **자연어 기반 아이디어 입력:** 만들고 싶은 앱에 대한 설명을 간단한 자연어로 입력합니다.
 *   **AI 기반 설계 제안:** Google Gemini API를 사용하여 앱 아이디어에 맞는 Google Sheet 데이터 구조(시트명, 필드)와 기본적인 화면 UI 요소들을 제안받습니다.
 *   **사용자 수정 가능:** AI가 제안한 설계를 사용자가 직접 검토하고 필요에 따라 수정할 수 있습니다.
 *   **코드 자동 생성:** 확정된 설계를 바탕으로 Google Apps Script용 `Code.gs` (백엔드 로직) 및 `index.html` (프론트엔드 UI, Tailwind CSS 및 인라인 JavaScript 포함) 파일을 자동으로 생성합니다.

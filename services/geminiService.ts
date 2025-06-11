@@ -1,20 +1,30 @@
-
-
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { AiDesignProposal, GeneratedCode, Phase2RequestData, GeminiDesignResponse, GeminiCodeResponse } from '../types';
 import { WIZARD_GEMINI_MODEL, PHASE1_SYSTEM_PROMPT, PHASE2_SYSTEM_PROMPT, DESCRIPTION_GENERATION_SYSTEM_PROMPT } from '../constants';
 
-// Ensure API_KEY is available. In a real build, this would be set through environment variables.
-// For example, using Vite: import.meta.env.VITE_GEMINI_API_KEY
-// For this environment, we assume process.env.API_KEY is directly available.
-const API_KEY = process.env.API_KEY;
+let ai: GoogleGenAI | null = null;
 
-if (!API_KEY) {
-  console.error("API_KEY is not set. Please ensure the API_KEY environment variable is configured.");
-  // Potentially throw an error or handle this state in the UI more gracefully
-}
-
-const ai = new GoogleGenAI({ apiKey: API_KEY! }); // Use non-null assertion as we expect it to be set
+/**
+ * Initializes the Wizard's AI client with the provided API key.
+ * @param apiKey The Gemini API key for the wizard.
+ * @returns True if initialization was successful, false otherwise.
+ */
+export const initWizardAi = (apiKey: string): boolean => {
+  if (!apiKey || apiKey.trim() === '') {
+    console.error("Wizard AI: Attempted to initialize with an empty API key.");
+    ai = null;
+    return false;
+  }
+  try {
+    ai = new GoogleGenAI({ apiKey });
+    console.log("Wizard AI: GoogleGenAI client initialized successfully.");
+    return true;
+  } catch (error) {
+    console.error("Wizard AI: Failed to initialize GoogleGenAI client:", error);
+    ai = null;
+    return false;
+  }
+};
 
 function parseJsonFromText(text: string): any {
   let jsonStr = text.trim();
@@ -24,25 +34,19 @@ function parseJsonFromText(text: string): any {
     jsonStr = match[1].trim();
   }
 
-  // Attempt to fix common malformed escape sequences from AI
-  // 1. AI might output `\$` instead of `$` in template literals within JSON strings
   jsonStr = jsonStr.replace(/\\\$/g, '$');
-
-  // 2. Remove trailing comma before the final closing brace of the JSON object
-  //    e.g., changes `{"key": "value",}` to `{"key": "value"}`
   jsonStr = jsonStr.replace(/,\s*(?=}})$/, '');
 
   try {
     return JSON.parse(jsonStr);
   } catch (e) {
     console.error("Failed to parse JSON string (after attempting fixes):", jsonStr, e);
-    // Log context around the error position for better debugging if it still fails
     let errorContext = "";
     if (e instanceof SyntaxError && typeof e.message === 'string') {
         const positionMatch = e.message.match(/position (\d+)/);
         if (positionMatch && positionMatch[1]) {
             const errorPos = parseInt(positionMatch[1], 10);
-            const contextChars = 100; // Number of characters before and after the error position
+            const contextChars = 100;
             const start = Math.max(0, errorPos - contextChars);
             const end = Math.min(jsonStr.length, errorPos + contextChars);
             errorContext = ` Context around error (pos ${errorPos}): "...${jsonStr.substring(start, end)}..."`;
@@ -53,7 +57,10 @@ function parseJsonFromText(text: string): any {
 }
 
 export const generateAppDescriptionFromIdea = async (idea: string): Promise<string> => {
-  if (!API_KEY) throw new Error("Gemini API Key is not configured.");
+  if (!ai) {
+    console.error("Wizard AI (generateAppDescriptionFromIdea): AI client not initialized.");
+    throw new Error("마법사 AI가 초기화되지 않았습니다. API 키를 설정하고 다시 시도해주세요.");
+  }
 
   const userPrompt = `프로젝트 아이디어: ${idea}`;
 
@@ -63,8 +70,6 @@ export const generateAppDescriptionFromIdea = async (idea: string): Promise<stri
       contents: userPrompt, 
       config: {
         systemInstruction: DESCRIPTION_GENERATION_SYSTEM_PROMPT,
-        // IMPORTANT: Do NOT set responseMimeType to "application/json" here. We want plain text.
-        // Omit thinkingConfig to use default (enabled) for higher quality description
       }
     });
     return response.text;
@@ -79,8 +84,11 @@ export const generateAppDescriptionFromIdea = async (idea: string): Promise<stri
 
 
 export const generateDesignProposal = async (projectName: string, appDescription: string): Promise<AiDesignProposal> => {
-  if (!API_KEY) throw new Error("Gemini API Key is not configured.");
-
+  if (!ai) {
+    console.error("Wizard AI (generateDesignProposal): AI client not initialized.");
+    throw new Error("마법사 AI가 초기화되지 않았습니다. API 키를 설정하고 다시 시도해주세요.");
+  }
+  
   const userPrompt = `프로젝트 이름: ${projectName}\\n앱 설명: ${appDescription}`;
   
   try {
@@ -90,12 +98,10 @@ export const generateDesignProposal = async (projectName: string, appDescription
       config: {
         systemInstruction: PHASE1_SYSTEM_PROMPT,
         responseMimeType: "application/json",
-        // Omit thinkingConfig to use default (enabled) for higher quality design proposal
       }
     });
 
     const design = parseJsonFromText(response.text) as GeminiDesignResponse;
-    // Validate basic structure
     if (!design || !design.sheet_name || !Array.isArray(design.sheet_fields) || !Array.isArray(design.ui_elements)) {
         throw new Error("AI 응답에서 필요한 디자인 구조(sheet_name, sheet_fields, ui_elements)를 찾을 수 없습니다.");
     }
@@ -110,9 +116,11 @@ export const generateDesignProposal = async (projectName: string, appDescription
 };
 
 export const generateAppCode = async (data: Phase2RequestData): Promise<GeneratedCode> => {
-  if (!API_KEY) throw new Error("Gemini API Key is not configured.");
+  if (!ai) {
+    console.error("Wizard AI (generateAppCode): AI client not initialized.");
+    throw new Error("마법사 AI가 초기화되지 않았습니다. API 키를 설정하고 다시 시도해주세요.");
+  }
 
-  // Construct a detailed user prompt for code generation
   const userPromptParts = [
     `프로젝트 이름: ${data.projectName}`,
     `원래 앱 설명: ${data.appDescription}`,
@@ -122,7 +130,7 @@ export const generateAppCode = async (data: Phase2RequestData): Promise<Generate
     `---`,
     `최종 UI 요소 목록:\\n${data.finalUiElements.map(el => `- ${el}`).join('\\n')}`,
     `---`,
-    `사용자 앱용 Gemini API 키: ${data.targetGeminiApiKey}`, // This key is for the generated app
+    `사용자 앱용 Gemini API 키: ${data.targetGeminiApiKey}`,
     `사용자 앱용 Gemini 모델: ${data.targetGeminiModel}`,
     `사용자 앱용 구글 시트 ID: ${data.targetGoogleSheetId}`,
     `---`,
@@ -140,7 +148,6 @@ export const generateAppCode = async (data: Phase2RequestData): Promise<Generate
       config: {
         systemInstruction: PHASE2_SYSTEM_PROMPT,
         responseMimeType: "application/json",
-        // Omit thinkingConfig to use default (enabled) for higher quality code generation
       }
     });
 
@@ -151,7 +158,6 @@ export const generateAppCode = async (data: Phase2RequestData): Promise<Generate
 
     const sheetStructureContent = `Sheet Name: ${data.finalSheetName}\n\nSheet Fields (Headers):\n${data.finalSheetFields.map(f => `- ${f}`).join('\n')}`;
     
-    // Generate Claude Prompt Content
     const claudePromptPart1 = `
 1-1. 앱과 연동할 구글시트 및 화면 인터페이스 구성하기
 

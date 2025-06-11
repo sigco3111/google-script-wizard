@@ -19,7 +19,8 @@ interface Phase1FormProps {
   onNextStep: () => void;
   clearError: () => void;
   setError: (message: string) => void;
-  setIsGlobalLoading: (isLoading: boolean) => void; // Added prop
+  setIsGlobalLoading: (isLoading: boolean) => void;
+  isWizardAiInitialized: boolean; // Added prop
 }
 
 export const Phase1Form: React.FC<Phase1FormProps> = ({
@@ -34,7 +35,8 @@ export const Phase1Form: React.FC<Phase1FormProps> = ({
   onNextStep,
   clearError,
   setError,
-  setIsGlobalLoading, // Destructure prop
+  setIsGlobalLoading,
+  isWizardAiInitialized, // Destructure prop
 }) => {
   const [isLoadingDescription, setIsLoadingDescription] = useState<boolean>(false);
 
@@ -63,6 +65,10 @@ export const Phase1Form: React.FC<Phase1FormProps> = ({
   const exampleAppDescriptionPlaceholder = `예: 사용자가 사진을 올리면 AI가 분석하고 그 결과를 Google Sheet에 저장하는 앱입니다. 주요 기능과 사용자의 앱 사용 순서를 설명해주세요.`;
 
   const handleGenerateAppDescription = async () => {
+    if (!isWizardAiInitialized) {
+      setError('마법사 AI가 초기화되지 않았습니다. API 키를 먼저 설정하거나 확인해주세요.');
+      return;
+    }
     if (!projectName.trim()) {
       setError('프로젝트 이름을 먼저 입력해주세요.');
       return;
@@ -110,7 +116,7 @@ export const Phase1Form: React.FC<Phase1FormProps> = ({
           />
           <Button 
             onClick={handleGenerateAppDescription} 
-            disabled={!projectName.trim() || isLoadingAiDesign || isLoadingDescription}
+            disabled={!isWizardAiInitialized || !projectName.trim() || isLoadingAiDesign || isLoadingDescription}
             variant="solid"
             color="secondary"
             size="sm"
@@ -121,7 +127,7 @@ export const Phase1Form: React.FC<Phase1FormProps> = ({
         </div>
       </div>
 
-      <Button onClick={onGetAiDesign} disabled={isLoadingAiDesign || isLoadingDescription || !projectName.trim() || !appDescription.trim()} fullWidth>
+      <Button onClick={onGetAiDesign} disabled={!isWizardAiInitialized || isLoadingAiDesign || isLoadingDescription || !projectName.trim() || !appDescription.trim()} fullWidth>
         {isLoadingAiDesign ? <LoadingSpinner size="sm" /> : 'AI 설계 제안 받기'}
       </Button>
 
