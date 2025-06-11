@@ -1,12 +1,13 @@
 
+
 import React, { useState } from 'react';
 import { Button } from './Button';
 
 interface CodeDisplayProps {
-  codeGs: string;
-  indexHtml: string;
+  codeGs?: string; // Optional
+  indexHtml?: string; // Optional
   sheetStructureTxt: string;
-  claudePromptTxt: string; // Added prop for Claude prompt
+  claudePromptTxt: string;
   onDownloadZip: () => void;
   onRestart: () => void;
 }
@@ -43,7 +44,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({ codeGs, indexHtml, she
   const [gsCopied, setGsCopied] = useState(false);
   const [htmlCopied, setHtmlCopied] = useState(false);
   const [structureCopied, setStructureCopied] = useState(false);
-  const [claudePromptCopied, setClaudePromptCopied] = useState(false); // State for Claude prompt copy
+  const [claudePromptCopied, setClaudePromptCopied] = useState(false);
 
   const copyToClipboard = (text: string, setCopied: (isCopied: boolean) => void) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -52,23 +53,33 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({ codeGs, indexHtml, she
     });
   };
 
+  const hasCodeFiles = codeGs || indexHtml;
+  const titleText = hasCodeFiles ? "🎉 코드 생성 완료! 🎉" : "📜 프롬프트 파일 생성 완료! 📜";
+  const downloadButtonText = hasCodeFiles ? 
+    "프로젝트 (.gs, .html, .txt) .zip으로 다운로드" : 
+    "프롬프트 파일 (.txt) .zip으로 다운로드";
+
   return (
     <div className="space-y-8">
-      <h2 className="text-3xl font-semibold text-sky-400 text-center">🎉 코드 생성 완료! 🎉</h2>
+      <h2 className="text-3xl font-semibold text-sky-400 text-center">{titleText}</h2>
       
       <div className="flex flex-col lg:flex-row flex-wrap gap-6 justify-center">
-        <CodeBlock 
-          title="Code.gs" 
-          code={codeGs} 
-          onCopy={() => copyToClipboard(codeGs, setGsCopied)}
-          copyLabel={gsCopied ? '복사됨!' : 'Code.gs 복사'}
-        />
-        <CodeBlock 
-          title="index.html" 
-          code={indexHtml}
-          onCopy={() => copyToClipboard(indexHtml, setHtmlCopied)}
-          copyLabel={htmlCopied ? '복사됨!' : 'index.html 복사'}
-        />
+        {codeGs && (
+          <CodeBlock 
+            title="Code.gs" 
+            code={codeGs} 
+            onCopy={() => copyToClipboard(codeGs, setGsCopied)}
+            copyLabel={gsCopied ? '복사됨!' : 'Code.gs 복사'}
+          />
+        )}
+        {indexHtml && (
+          <CodeBlock 
+            title="index.html" 
+            code={indexHtml}
+            onCopy={() => copyToClipboard(indexHtml, setHtmlCopied)}
+            copyLabel={htmlCopied ? '복사됨!' : 'index.html 복사'}
+          />
+        )}
         <CodeBlock 
           title="sheet_structure.txt" 
           code={sheetStructureTxt}
@@ -85,7 +96,7 @@ export const CodeDisplay: React.FC<CodeDisplayProps> = ({ codeGs, indexHtml, she
 
       <div className="flex flex-col sm:flex-row gap-4 mt-8">
         <Button onClick={onDownloadZip} fullWidth color="primary" className="items-center justify-center">
-           <DownloadIcon className="mr-2"/> 프로젝트 (.gs, .html, sheet_structure.txt, claude_prompt.txt) .zip으로 다운로드
+           <DownloadIcon className="mr-2"/> {downloadButtonText}
         </Button>
         <Button onClick={onRestart} fullWidth color="secondary">
           ✨ 새 마법 시작하기

@@ -1,3 +1,6 @@
+
+
+
 import { GoogleGenAI, GenerateContentResponse } from "@google/genai";
 import { AiDesignProposal, GeneratedCode, Phase2RequestData, GeminiDesignResponse, GeminiCodeResponse } from '../types';
 import { WIZARD_GEMINI_MODEL, PHASE1_SYSTEM_PROMPT, PHASE2_SYSTEM_PROMPT, DESCRIPTION_GENERATION_SYSTEM_PROMPT } from '../constants';
@@ -11,31 +14,47 @@ let ai: GoogleGenAI | null = null;
  */
 export const initWizardAi = (apiKey: string): boolean => {
   if (!apiKey || apiKey.trim() === '') {
-    console.error("Wizard AI: Attempted to initialize with an empty API key.");
-    ai = null;
+    console.error("Wizard AI: API key is empty. Initialization failed.");
+    ai = null; // Ensure ai is null if key is invalid
     return false;
   }
   try {
+    // Re-initialize the client with the new key
     ai = new GoogleGenAI({ apiKey });
     console.log("Wizard AI: GoogleGenAI client initialized successfully.");
     return true;
   } catch (error) {
     console.error("Wizard AI: Failed to initialize GoogleGenAI client:", error);
-    ai = null;
+    ai = null; // Ensure ai is null on error
     return false;
   }
 };
 
 function parseJsonFromText(text: string): any {
   let jsonStr = text.trim();
+
+  // Remove markdown fences (e.g., ```json ... ``` or ``` ... ```)
   const fenceRegex = /^```(?:json)?\s*\n?(.*?)\n?\s*```$/s;
   const match = jsonStr.match(fenceRegex);
   if (match && match[1]) {
     jsonStr = match[1].trim();
   }
 
-  jsonStr = jsonStr.replace(/\\\$/g, '$');
-  jsonStr = jsonStr.replace(/,\s*(?=}})$/, '');
+  // Remove literal backspace characters if they appear in the string
+  jsonStr = jsonStr.replace(/\b/g, '');
+
+  // Fix incorrectly escaped backticks (e.g., \` -> `).
+  // A literal backtick ` is valid in a JSON string, but \` is not a valid JSON escape sequence.
+  // This handles cases where the LLM might mistakenly escape a backtick.
+  jsonStr = jsonStr.replace(/\\`/g, '`');
+
+  // Fix for LLM sometimes over-escaping dollar signs (e.g., \\$ -> $).
+  // This is relevant if the string content itself is intended to have literal '$'.
+  jsonStr = jsonStr.replace(/\\\$/g, '$'); 
+  
+  // Remove trailing commas before closing curly braces or square brackets
+  jsonStr = jsonStr.replace(/,\s*(?=}})$/, ''); 
+  jsonStr = jsonStr.replace(/,\s*(?=])$/, ''); // Added for arrays
 
   try {
     return JSON.parse(jsonStr);
@@ -46,13 +65,13 @@ function parseJsonFromText(text: string): any {
         const positionMatch = e.message.match(/position (\d+)/);
         if (positionMatch && positionMatch[1]) {
             const errorPos = parseInt(positionMatch[1], 10);
-            const contextChars = 100;
+            const contextChars = 100; // Number of characters for context
             const start = Math.max(0, errorPos - contextChars);
             const end = Math.min(jsonStr.length, errorPos + contextChars);
-            errorContext = ` Context around error (pos ${errorPos}): "...${jsonStr.substring(start, end)}..."`;
+            errorContext = ` Context around error (pos ${errorPos}): "...${jsonStr.substring(start, errorPos)}[ERROR_HERE]${jsonStr.substring(errorPos, end)}..."`;
         }
     }
-    throw new Error(`AI 응답이 올바른 JSON 형식이 아닙니다 (수정 시도 후에도 실패). 응답 앞부분: ${jsonStr.substring(0,1000)}${errorContext}`);
+    throw new Error(`AI 응답이 올바른 JSON 형식이 아닙니다 (모든 수정 시도 후에도 실패). 응답 앞부분: ${jsonStr.substring(0,1000)}${errorContext}`);
   }
 }
 
@@ -115,47 +134,7 @@ export const generateDesignProposal = async (projectName: string, appDescription
   }
 };
 
-export const generateAppCode = async (data: Phase2RequestData): Promise<GeneratedCode> => {
-  if (!ai) {
-    console.error("Wizard AI (generateAppCode): AI client not initialized.");
-    throw new Error("마법사 AI가 초기화되지 않았습니다. API 키를 설정하고 다시 시도해주세요.");
-  }
-
-  const userPromptParts = [
-    `프로젝트 이름: ${data.projectName}`,
-    `원래 앱 설명: ${data.appDescription}`,
-    `---`,
-    `최종 구글 시트 이름: ${data.finalSheetName}`,
-    `최종 구글 시트 필드 (헤더):\\n${data.finalSheetFields.map(f => `- ${f}`).join('\\n')}`,
-    `---`,
-    `최종 UI 요소 목록:\\n${data.finalUiElements.map(el => `- ${el}`).join('\\n')}`,
-    `---`,
-    `사용자 앱용 Gemini API 키: ${data.targetGeminiApiKey}`,
-    `사용자 앱용 Gemini 모델: ${data.targetGeminiModel}`,
-    `사용자 앱용 구글 시트 ID: ${data.targetGoogleSheetId}`,
-    `---`,
-    `추가 요청 사항:`,
-    `- 최신 트렌드의 세련된 디자인 적용: ${data.applyStylishDesign ? '예' : '아니오'}`,
-    `- 모바일 반응형 CSS 포함: ${data.includeResponsiveCss ? '예' : '아니오'}`,
-    `${data.otherRequests ? `- 기타: ${data.otherRequests}` : ''}`
-  ];
-  const userPrompt = userPromptParts.join('\\n\\n');
-
-  try {
-    const response: GenerateContentResponse = await ai.models.generateContent({
-      model: WIZARD_GEMINI_MODEL, 
-      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
-      config: {
-        systemInstruction: PHASE2_SYSTEM_PROMPT,
-        responseMimeType: "application/json",
-      }
-    });
-
-    const geminiCodeResponse = parseJsonFromText(response.text) as GeminiCodeResponse;
-    if (!geminiCodeResponse || typeof geminiCodeResponse.code_gs !== 'string' || typeof geminiCodeResponse.index_html !== 'string') {
-        throw new Error("AI 응답에서 필요한 코드 구조(code_gs, index_html)를 찾을 수 없습니다.");
-    }
-
+const _buildPromptAndSheetFiles = (data: Phase2RequestData): { sheet_structure_txt: string; claude_prompt_txt: string } => {
     const sheetStructureContent = `Sheet Name: ${data.finalSheetName}\n\nSheet Fields (Headers):\n${data.finalSheetFields.map(f => `- ${f}`).join('\n')}`;
     
     const claudePromptPart1 = `
@@ -205,12 +184,60 @@ ${data.otherRequests ? `- 기타: ${data.otherRequests}` : ''}
     `.trim();
 
     const claudePromptContent = `${claudePromptPart1}\n\n\f\n\n${claudePromptPart2}`;
+    
+    return {
+        sheet_structure_txt: sheetStructureContent,
+        claude_prompt_txt: claudePromptContent
+    };
+};
+
+export const generateAppCode = async (data: Phase2RequestData): Promise<GeneratedCode> => {
+  if (!ai) {
+    console.error("Wizard AI (generateAppCode): AI client not initialized.");
+    throw new Error("마법사 AI가 초기화되지 않았습니다. API 키를 설정하고 다시 시도해주세요.");
+  }
+
+  const userPromptParts = [
+    `프로젝트 이름: ${data.projectName}`,
+    `원래 앱 설명: ${data.appDescription}`,
+    `---`,
+    `최종 구글 시트 이름: ${data.finalSheetName}`,
+    `최종 구글 시트 필드 (헤더):\\n${data.finalSheetFields.map(f => `- ${f}`).join('\\n')}`,
+    `---`,
+    `최종 UI 요소 목록:\\n${data.finalUiElements.map(el => `- ${el}`).join('\\n')}`,
+    `---`,
+    `사용자 앱용 Gemini API 키: ${data.targetGeminiApiKey}`,
+    `사용자 앱용 Gemini 모델: ${data.targetGeminiModel}`,
+    `사용자 앱용 구글 시트 ID: ${data.targetGoogleSheetId}`,
+    `---`,
+    `추가 요청 사항:`,
+    `- 최신 트렌드의 세련된 디자인 적용: ${data.applyStylishDesign ? '예' : '아니오'}`,
+    `- 모바일 반응형 CSS 포함: ${data.includeResponsiveCss ? '예' : '아니오'}`,
+    `${data.otherRequests ? `- 기타: ${data.otherRequests}` : ''}`
+  ];
+  const userPrompt = userPromptParts.join('\\n\\n');
+
+  try {
+    const response: GenerateContentResponse = await ai.models.generateContent({
+      model: WIZARD_GEMINI_MODEL, 
+      contents: [{ role: "user", parts: [{ text: userPrompt }] }],
+      config: {
+        systemInstruction: PHASE2_SYSTEM_PROMPT,
+        responseMimeType: "application/json",
+      }
+    });
+
+    const geminiCodeResponse = parseJsonFromText(response.text) as GeminiCodeResponse;
+    if (!geminiCodeResponse || typeof geminiCodeResponse.code_gs !== 'string' || typeof geminiCodeResponse.index_html !== 'string') {
+        throw new Error("AI 응답에서 필요한 코드 구조(code_gs, index_html)를 찾을 수 없습니다.");
+    }
+    
+    const auxiliaryFiles = _buildPromptAndSheetFiles(data);
 
     return {
       code_gs: geminiCodeResponse.code_gs,
       index_html: geminiCodeResponse.index_html,
-      sheet_structure_txt: sheetStructureContent,
-      claude_prompt_txt: claudePromptContent
+      ...auxiliaryFiles
     } as GeneratedCode;
 
   } catch (error) {
@@ -219,5 +246,18 @@ ${data.otherRequests ? `- 기타: ${data.otherRequests}` : ''}
         throw new Error(`앱 코드 생성 중 오류: ${error.message}`);
     }
     throw new Error("알 수 없는 오류로 앱 코드 생성에 실패했습니다.");
+  }
+};
+
+export const generatePromptFilesOnly = async (data: Phase2RequestData): Promise<Pick<GeneratedCode, 'sheet_structure_txt' | 'claude_prompt_txt'>> => {
+  try {
+    const auxiliaryFiles = _buildPromptAndSheetFiles(data);
+    return Promise.resolve(auxiliaryFiles);
+  } catch (error) {
+    console.error("Error generating prompt files:", error);
+    if (error instanceof Error) {
+        throw new Error(`프롬프트 파일 생성 중 오류: ${error.message}`);
+    }
+    throw new Error("알 수 없는 오류로 프롬프트 파일 생성에 실패했습니다.");
   }
 };

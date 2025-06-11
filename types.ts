@@ -1,4 +1,5 @@
 
+
 export interface AiDesignProposal {
   sheet_name: string;
   sheet_fields: string[];
@@ -6,10 +7,10 @@ export interface AiDesignProposal {
 }
 
 export interface GeneratedCode {
-  code_gs: string;
-  index_html: string;
+  code_gs?: string; // Made optional
+  index_html?: string; // Made optional
   sheet_structure_txt: string;
-  claude_prompt_txt: string; // Added for the Claude prompt text file
+  claude_prompt_txt: string; 
 }
 
 // Data collected from Phase 2 form to be sent to Gemini for code generation

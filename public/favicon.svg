@@ -1,30 +1,13 @@
-<?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<svg
-   width="64"
-   height="64"
-   viewBox="0 0 64 64"
-   version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-  <defs>
-    <linearGradient id="googleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" style="stop-color:#4285F4;stop-opacity:1" />
-      <stop offset="33%" style="stop-color:#EA4335;stop-opacity:1" />
-      <stop offset="66%" style="stop-color:#FBBC05;stop-opacity:1" />
-      <stop offset="100%" style="stop-color:#34A853;stop-opacity:1" />
-    </linearGradient>
-  </defs>
-  
-  <!-- 배경 원 -->
-  <circle cx="32" cy="32" r="30" fill="#FFFFFF" />
-  
-  <!-- G 문자 -->
-  <path d="M 42,32 C 42,37.5 37.5,42 32,42 C 26.5,42 22,37.5 22,32 C 22,26.5 26.5,22 32,22 C 34.5,22 36.9,23 38.5,24.6 L 35,28 C 34.2,27.2 33.1,26.8 32,26.8 C 29.1,26.8 26.8,29.1 26.8,32 C 26.8,34.9 29.1,37.2 32,37.2 C 34.2,37.2 36.1,35.8 36.7,33.8 L 32,33.8 L 32,30 L 42,30 L 42,32 Z" fill="url(#googleGradient)" />
-  
-  <!-- 스크립트 코드 라인을 상징하는 요소들 -->
-  <rect x="42" y="21" width="8" height="2" rx="1" fill="#4285F4" />
-  <rect x="42" y="25" width="6" height="2" rx="1" fill="#EA4335" />
-  <rect x="42" y="29" width="4" height="2" rx="1" fill="#FBBC05" />
-  <rect x="42" y="33" width="7" height="2" rx="1" fill="#34A853" />
-  <rect x="42" y="37" width="5" height="2" rx="1" fill="#4285F4" />
-  <rect x="42" y="41" width="8" height="2" rx="1" fill="#EA4335" />
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="64px" height="64px" viewBox="0 0 64 64" version="1.1" xmlns="http://www.w3.org/2000/svg">
+  <title>Google Script Wizard Favicon</title>
+  <g stroke="none" stroke-width="1" fill="none" fill-rule="evenodd">
+    <!-- 마법사 모자 -->
+    <path d="M32,4 L10,30 L54,30 L32,4 Z" fill="#4285F4" />
+    <path d="M16,30 L48,30 L48,44 C48,51.732 41.732,58 34,58 L30,58 C22.268,58 16,51.732 16,44 L16,30 Z" fill="#34A853" />
+    <!-- G 문자 -->
+    <path d="M38,41 C38,44.866 34.866,48 31,48 C27.134,48 24,44.866 24,41 C24,37.134 27.134,34 31,34 C32.591,34 34.117,34.492 35.354,35.354 L33,38 C32.374,37.633 31.704,37.5 31,37.5 C29.067,37.5 27.5,39.067 27.5,41 C27.5,42.933 29.067,44.5 31,44.5 C32.933,44.5 34.5,42.933 34.5,41 L31,41 L31,38 L38,38 L38,41 Z" fill="#FFFFFF" />
+    <!-- 별(마법 효과) -->
+    <polygon points="46,10 48,15 53,16 49.5,20 50,25 46,22.5 42,25 42.5,20 39,16 44,15" fill="#FBBC05" />
+  </g>
 </svg> 
