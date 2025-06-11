@@ -1,5 +1,5 @@
 {
-  "name": "Google Script Wizard",
+  "name": "구글 앱스크립트 마법사",
   "description": "A step-by-step wizard that takes your app idea in natural language, helps design data structures and UI, and then generates complete Code.gs and index.html files for Google Apps Script.",
   "requestFramePermissions": [],
   "prompt": ""

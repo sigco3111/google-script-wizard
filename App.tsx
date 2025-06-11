@@ -294,7 +294,7 @@ const App: React.FC = () => {
       
       <div className="min-h-screen bg-gradient-to-br from-slate-900 to-sky-900 text-slate-100 flex flex-col items-center p-4 sm:p-8 selection:bg-sky-500 selection:text-white">
         <header className="w-full max-w-4xl mb-6 text-center">
-          <h1 className="text-4xl sm:text-5xl font-bold text-sky-400">Google Script Wizard</h1>
+          <h1 className="text-4xl sm:text-5xl font-bold text-sky-400">구글 앱스크립트 마법사</h1>
           <p className="text-slate-400 mt-2 text-lg">AI의 도움으로 Google Apps Script 프로젝트를 손쉽게 만들어보세요!</p>
         </header>
 
@@ -373,7 +373,7 @@ const App: React.FC = () => {
           )}
         </main>
         <footer className="mt-12 text-center text-slate-500">
-          <p>&copy; {new Date().getFullYear()} Google Script Wizard. AI의 힘을 빌려 창조하세요.</p>
+          <p>&copy; {new Date().getFullYear()} 구글 앱스크립트 마법사. AI의 힘을 빌려 창조하세요.</p>
         </footer>
       </div>
     </>

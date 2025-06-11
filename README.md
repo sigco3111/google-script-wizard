@@ -1,9 +1,9 @@
 
-# Google Script Wizard
+# 구글 앱스크립트 마법사
 
 ## 소개 (Introduction)
 
-Google Script Wizard는 자연어 앱 아이디어를 입력받아, Google Apps Script 프로젝트를 위한 데이터 구조 설계(Google Sheets) 및 UI 요소 제안을 AI(Google Gemini API)를 통해 받고, 최종적으로 `Code.gs`와 `index.html` 파일을 생성하거나 관련 프롬프트 파일만을 생성해주는 단계별 마법사 도구입니다. 복잡한 설정 없이 빠르게 프로토타입을 만들거나, Apps Script 개발의 시작점으로 활용할 수 있습니다.
+는 자연어 앱 아이디어를 입력받아, Google Apps Script 프로젝트를 위한 데이터 구조 설계(Google Sheets) 및 UI 요소 제안을 AI(Google Gemini API)를 통해 받고, 최종적으로 `Code.gs`와 `index.html` 파일을 생성하거나 관련 프롬프트 파일만을 생성해주는 단계별 마법사 도구입니다. 복잡한 설정 없이 빠르게 프로토타입을 만들거나, Apps Script 개발의 시작점으로 활용할 수 있습니다.
 
 https://www.oppadu.com/ai-apps-script-10min/ 에서 영감을 받아 만들었습니다.
 
@@ -29,7 +29,7 @@ https://www.oppadu.com/ai-apps-script-10min/ 에서 영감을 받아 만들었�
 
 ## 작동 방식 (How It Works)
 
-Google Script Wizard는 두 단계로 구성됩니다.
+구글 앱스크립트 마법사는 두 단계로 구성됩니다.
 
 ### Phase 1: 아이디어 구체화 및 AI 설계 제안
 
@@ -65,14 +65,14 @@ Google Script Wizard는 두 단계로 구성됩니다.
 
 1.  **사전 준비:**
     *   **Google Gemini API 키 (마법사 자체용):**
-        *   이 Google Script Wizard 애플리케이션을 실행하고 AI 기능을 사용하려면 유효한 Gemini API 키가 필요합니다.
+        *   이 구글 앱스크립트 마법사 애플리케이션을 실행하고 AI 기능을 사용하려면 유효한 Gemini API 키가 필요합니다.
         *   애플리케이션 실행 시, (1) 호스팅 환경에서 `window.process.env.API_KEY`로 키가 주입되었는지 확인하고, (2) 브라우저의 `localStorage`에 저장된 키가 있는지 확인합니다.
         *   두 경우 모두 키를 찾지 못하면, 화면 상단에 API 키를 입력하고 저장할 수 있는 UI(`WizardApiKeyManager`)가 나타납니다. 여기에 유효한 Gemini API 키를 입력하고 저장해야 마법사의 AI 기능이 활성화됩니다. 이 키는 마법사가 AI 설계 제안 및 코드 생성을 위해 Google Gemini API와 통신하는 데 사용됩니다.
     *   **Google Gemini API 키 (생성될 앱용):** (코드 생성 시 필요할 수 있음) 마법사의 2단계 "세부 정보 입력" 화면에서 "생성될 앱의 Gemini API 키" 필드에 입력하는 키입니다. 이 키는 마법사가 생성하는 `Code.gs` 파일 내에 포함될 수 있으며, 최종적으로 만들어진 Google Apps Script 웹 앱이 자체적으로 Gemini API를 호출해야 할 경우 사용됩니다. Google AI Studio 등에서 발급받을 수 있습니다.
     *   **Google Sheet ID (생성될 앱용):** (코드 생성 시 필요할 수 있음) 생성될 앱이 데이터를 저장하고 읽어올 Google 스프레드시트의 ID입니다. 새 시트를 만들고 해당 시트의 URL에서 ID 부분을 복사하여 준비합니다. (예: `https://docs.google.com/spreadsheets/d/YOUR_SHEET_ID/edit`)
 
 2.  **마법사 실행:**
-    *   웹 브라우저에서 Google Script Wizard 애플리케이션을 엽니다.
+    *   웹 브라우저에서 구글 앱스크립트 마법사 애플리케이션을 엽니다.
     *   최초 실행 시 또는 API 키가 설정되지 않은 경우, 화면 상단의 안내에 따라 마법사 자체용 Gemini API 키를 설정합니다.
 
 3.  **1단계: 아이디어 입력 및 AI 설계 받기**
@@ -168,7 +168,7 @@ Google Script Wizard는 두 단계로 구성됩니다.
 ## 중요 참고 사항 (Important Notes)
 
 *   **API 키 관리:**
-    *   **마법사 자체용 API 키:** 이 키는 Google Script Wizard 애플리케이션의 AI 기능을 사용하기 위해 필수적입니다. 앱은 시작 시 이 키를 (1) 호스팅 환경에 의한 주입(`window.process.env.API_KEY`), (2) 브라우저 `localStorage` 순으로 확인하며, 찾을 수 없는 경우 사용자에게 직접 입력을 요청합니다. 이 키는 클라이언트 사이드에서 직접 Gemini API를 호출하는 데 사용되므로, 안전하게 관리되어야 합니다. 프로덕션 환경에서는 보안 강화를 위해 백엔드 서버를 통해 API를 호출하는 아키텍처를 고려하는 것이 좋습니다.
+    *   **마법사 자체용 API 키:** 이 키는 구글 앱스크립트 마법사 애플리케이션의 AI 기능을 사용하기 위해 필수적입니다. 앱은 시작 시 이 키를 (1) 호스팅 환경에 의한 주입(`window.process.env.API_KEY`), (2) 브라우저 `localStorage` 순으로 확인하며, 찾을 수 없는 경우 사용자에게 직접 입력을 요청합니다. 이 키는 클라이언트 사이드에서 직접 Gemini API를 호출하는 데 사용되므로, 안전하게 관리되어야 합니다. 프로덕션 환경에서는 보안 강화를 위해 백엔드 서버를 통해 API를 호출하는 아키텍처를 고려하는 것이 좋습니다.
     *   **생성될 앱용 API 키:** 사용자가 2단계에서 "생성될 앱의 Gemini API 키"로 입력하는 키는, 생성된 `Code.gs` 파일 내에 직접 포함되거나 Google Apps Script의 속성 서비스(Property Service) 등을 통해 사용될 수 있습니다. 생성된 스크립트의 접근 권한 및 공유 설정을 신중히 관리하여 API 키가 부적절하게 노출되지 않도록 주의해야 합니다.
 *   **AI 생성 코드 검토:** (코드 생성 시) AI가 생성한 코드는 훌륭한 시작점을 제공하지만, 모든 경우에 완벽하다고 보장할 수는 없습니다. 실제 사용 전 반드시 코드를 검토하고, 필요에 따라 수정 및 테스트하는 과정이 필요합니다.
 *   **Google Apps Script 권한:** (코드 생성 시) 생성된 `Code.gs` 파일을 실제 Google Apps Script 프로젝트에 배포한 후, 해당 스크립트가 Google Sheets, 외부 API (Gemini API 등) 호출, 사용자의 Google Drive 접근 등 필요한 작업에 대한 권한을 사용자의 Google 계정으로부터 부여받아야 정상적으로 작동합니다. 스크립트 편집기에서 함수를 처음 실행하거나 웹 앱에 처음 접속할 때 권한 요청 창이 나타납니다.
