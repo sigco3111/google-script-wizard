@@ -11,7 +11,9 @@ https://www.oppadu.com/ai-apps-script-10min/ 에서 영감을 받아 만들었�
 <span style="color:green">`Code.gs` `index.html` 파일이 잘 동작하지 않는다면, claude_prompt.txt의 프롬프트를 이용해 클로드나 구글AI스튜디오를 사용하시면 됩니다. (프로젝트 규모가 크거나 가끔 발생함.)</span>
 
 
-실행 주소 : https://dev-canvas-pi.vercel.app/
+**👉 라이브 데모**: [https://sigco3111.github.io/google-script-wizard/](https://sigco3111.github.io/google-script-wizard/) — 브라우저에서 바로 실행
+
+> 📦 **호스팅 메모**: 본 프로젝트의 라이브 데모는 **GitHub Pages**로 운영됩니다. `vercel.json` 파일은 Vercel 사용 이력(2025-08 ~ 2026-08)을 보존하기 위해 그대로 유지되며, GitHub Pages 빌드에는 영향이 없습니다. Vercel CLI나 대시보드로 다시 배포할 경우 `vercel.json`이 그대로 사용됩니다.
 
 ## 주요 기능 (Key Features)
 
